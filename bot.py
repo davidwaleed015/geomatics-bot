@@ -2,17 +2,9 @@ import os
 import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import google.generativeai as genai
 
-# توكن البوت وتوكن الـ Gemini API
 TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
-GEMINI_API_KEY = "حط_مفتاح_الـ_Gemini_API_هنا"  # سيتم ربطه ليعمل البوت بالذكاء الاصطناعي بالكامل
-
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
-
-# إعداد الـ Gemini API
-genai.configure(api_key=GEMINI_API_KEY)
-gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
 def init_db():
     conn = sqlite3.connect("geomatics_bot.db")
@@ -66,9 +58,9 @@ def send_welcome(message):
     username = message.from_user.username or message.from_user.first_name
     trials, is_vip = get_or_create_user(user_id, username)
     welcome_text = (
-        f"🌐 **مرحباً بك يا {username} في المنصة الهندسية الذكية (Geomatics Copilot AI)**\n\n"
-        f"✨ لديك **({trials})** تجارب مجانية للاستعلام الهندسي الذكي.\n"
-        f"👇 **اختر القسم المطلوب من القائمة أدناه، أو اكتب سؤالك الهندسي مباشرة وسأقوم بالإجابة عليه فوراً:**"
+        f"🌐 **مرحباً بك يا {username} في المنصة الهندسية المتكاملة (Geomatics Copilot)**\n\n"
+        f"✨ لديك **({trials})** تجارب مجانية للاستعلام الهندسي.\n"
+        f"👇 **اختر القسم المطلوب من القائمة الشاملة أدناه:**"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=main_menu_keyboard())
 
@@ -182,22 +174,15 @@ def callback_handler(call):
         bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
 @bot.message_handler(func=lambda message: True)
-def handle_ai_chat(message):
-    user_message = message.text
-    # إرسال رسالة "جاري التفكير..." للمستخدم
-    processing_msg = bot.reply_to(message, "🤖 **جاري تحليل سؤالك الهندسي وصياغة الإجابة...**", parse_mode="Markdown")
-    
-    try:
-        # توجيه السؤال لنموذج الذكاء الاصطناعي مع توجيه هندسي متخصص
-        prompt = f"أنت مساعد هندسي ذكي متخصص في الجيوماتكس، المساحة، نظم المعلومات الجغرافية GIS، وبرامج الهندسة المدنية. أجب باختصار واحترافية على السؤال التالي باللغة العربية: {user_message}"
-        response = gemini_model.generate_content(prompt)
-        ai_reply = response.text
-        
-        # تعديل رسالة الانتظار بالإجابة النهائية
-        bot.edit_message_text(ai_reply, chat_id=message.chat.id, message_id=processing_msg.message_id, parse_mode="Markdown")
-    except Exception as e:
-        bot.edit_message_text(f"عذراً، حدث خطأ أثناء الاتصال بمحرك الذكاء الاصطناعي. يجدر بك مراجعة الإعدادات.", chat_id=message.chat.id, message_id=processing_msg.message_id)
+def handle_text_chat(message):
+    text = message.text
+    response_msg = (
+        f"🤖 **رد مساعد الجيوماتكس الشامل:**\n\n"
+        f"تم استلام استفسارك حول: *({text})*.\n"
+        f"اختر القسم المطلوب من القائمة الرئيسية التفاعلية لتجد كافة التفاصيل فوراً!"
+    )
+    bot.reply_to(message, response_msg, parse_mode="Markdown")
 
 if __name__ == "__main__":
-    print("AI-Powered Bot is running smoothly...")
+    print("Bot is running perfectly...")
     bot.infinity_polling(skip_pending=True)
