@@ -3,12 +3,11 @@ import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-# توكن البوت الأساسي
-TELEGRAM_BOT_TOKEN = "8605350892:AAEQAroXq3LJHuQULCqeHhROQfj6DeutxkM"
+# التوكن الأساسي للبوت
+TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-# تهيئة قاعدة البيانات المحلية للمستخدمين
 def init_db():
     conn = sqlite3.connect("geomatics_bot.db")
     cursor = conn.cursor()
@@ -37,7 +36,6 @@ def get_or_create_user(user_id, username):
     conn.close()
     return user
 
-# أزرار القائمة الرئيسية المنسقة
 def main_menu_keyboard():
     keyboard = InlineKeyboardMarkup()
     keyboard.row(InlineKeyboardButton("📡 أقسام الأجهزة المساحية والمعايرة", callback_data="survey_devices"))
@@ -61,38 +59,113 @@ def send_welcome(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name
     trials, is_vip = get_or_create_user(user_id, username)
-    welcome_text = f"🌐 **مرحباً بك يا {username} في المنصة الهندسية المتكاملة (Geomatics Copilot)**\n\n✨ لديك **({trials})** تجارب مجانية.\n👇 اختر القسم المناسب لعملك من القائمة أدناه:"
+    welcome_text = (
+        f"🌐 **مرحباً بك يا {username} في المنصة الهندسية المتكاملة (Geomatics Copilot)**\n\n"
+        f"✨ لديك **({trials})** تجارب مجانية للاستعلام الهندسي.\n"
+        f"👇 **اختر القسم المناسب لعملك من القائمة أدناه:**"
+    )
     bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=main_menu_keyboard())
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
     bot.answer_callback_query(call.id)
+    
     if call.data == "main_menu":
         bot.edit_message_text("🌐 **القائمة الرئيسية للمنصة:**\nاختر أحد الأقسام أدناه:", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=main_menu_keyboard())
+
     elif call.data == "survey_devices":
-        bot.edit_message_text("📡 **قسم الأجهزة المساحية والمعايرة:**\n• Total Station: ضبط أخطاء التوجيه والرصد.\n• GNSS: إعدادات RTK وتحويل الإحداثيات.\n• Digital Level: الموازنات الدقيقة.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "📡 **قسم الأجهزة المساحية والمعايرة:**\n\n"
+            "• **Total Station:** شاشات التشغيل، القياسات الرصدية، وتصحيح أخطاء التوجيه.\n"
+            "• **GPS / GNSS:** إعدادات الـ RTK، ربط الشبكات الجيوديسية، وتحويل الإحداثيات.\n"
+            "• **Digital Level:** الموازنات الدقيقة وحساب مناسيب النقاط بدقة عالية."
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "remote_sensing":
-        bot.edit_message_text("🌍 **قسم الاستشعار عن بعد:**\n• ENVI & ERDAS Imagine للمعالجة الفضائية والتصنيف الطيفي.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "🌍 **قسم الاستشعار عن بعد (Remote Sensing):**\n\n"
+            "• **برنامج ENVI:** معالجة الصور الفضائية المتقدمة والتحليل الطيفي.\n"
+            "• **برنامج ERDAS Imagine:** التصحيح الهندسي للمرئيات وتصنيف الصور (Image Classification).\n"
+            "• **مؤشرات الغطاء النباتي:** حساب مؤشرات (NDVI, NDWI) بدقة."
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "gis_software":
-        bot.edit_message_text("💻 **برامج الـ GIS وتطبيقات البايثون:**\n• ArcGIS Pro & QGIS وقواعد البيانات الجغرافية.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "💻 **برامج الـ GIS وتطبيقات البايثون:**\n\n"
+            "• **ArcGIS Pro:** بناء قواعد البيانات الجغرافية (Geodatabases) والتحليل المكاني.\n"
+            "• **QGIS:** الخرائط الرقمية المفتوحة وتكامل الإضافات البرمجية.\n"
+            "• **Python & ArcPy:** أتمتة المهام واستخراج التقارير آلياً."
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "civil_roads":
-        bot.edit_message_text("🛣️ **تصميم الطرق (Civil 3D):**\n• المسارات، القطاعات الطولية والعرضية، وحساب كميات الحفر والردم.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "🛣️ **قسم تصميم الطرق (AutoCAD Civil 3D):**\n\n"
+            "• إنشاء مسارات الطرق المحورية (Alignments) والقطاعات الطولية (Profiles).\n"
+            "• تصميم القطاعات العرضية (Assemblies & Corridors).\n"
+            "• حساب كميات الحفر والردم (Earthwork Quantities)."
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "software_hub":
-        bot.edit_message_text("📦 **مستودع البرامج والتحميلات:**\n• روابط تحميل برامج المجال والروابط المباشرة.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "📦 **مستودع البرامج المتاحة (Software Hub):**\n\n"
+            "إليك روابط تحميل أهم برامج المجال (مع التفعيل):\n"
+            "1. **ArcGIS Pro:** [تحميل مباشر](https://example.com/arcgis)\n"
+            "2. **AutoCAD Civil 3D:** [تحميل مباشر](https://example.com/civil3d)\n"
+            "3. **ENVI & ERDAS:** [تحميل مباشر](https://example.com/envi-erdas)\n"
+            "4. **QGIS:** [الموقع الرسمى](https://qgis.org)"
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "master_corner":
-        bot.edit_message_text("🎓 **ركن الماجستير والأبحاث الأكاديمية:**\n• مقترحات أبحاث الماجستير والمراجع المساحية المتخصصة.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "🎓 **ركن الماجستير والأبحاث الأكاديمية:**\n\n"
+            "• مقترحات أبحاث رسائل الماجستير والدكتوراه في الجيوماتكس ونظم المعلومات.\n"
+            "• مراجع مساحية وكتب علمية متخصصة.\n"
+            "• مصادر قواعد بيانات مكانية عالمية مجانية."
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "dev_tools":
-        bot.edit_message_text("🛠️ **أدوات المطورين وسكربتات الأتمتة:**\n• سكربتات بايثون جاهزة لمهام الـ GIS.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "🛠️ **أدوات المطورين وسكربتات الأتمتة:**\n\n"
+            "إليك كود بايثون سريع للتحقق من الطبقات الجغرافية:\n"
+            "```python\nimport arcpy\narcpy.env.workspace = 'C:/Data'\nfc_list = arcpy.ListFeatureClasses()\nprint(fc_list)\n```"
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "vip_plans":
-        bot.edit_message_text("💎 **باقات VIP الاحترافية (1 إلى 5):**\n• باقات مخصصة للتحكم الكامل والوصول الشامل.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "💎 **تفاصيل باقات الاشتراك الاحترافية (VIP 1 إلى VIP 5):**\n\n"
+            "🔹 **VIP 1 - الباقة الأساسية:** تشمل الأجهزة المساحية وأساسيات الـ GIS.\n"
+            "🔹 **VIP 2 - الباقة المتقدمة:** أساسيات الـ GIS + الاستشعار عن بعد (ENVI & ERDAS).\n"
+            "🔹 **VIP 3 - الباقة الاحترافية:** الاستشعار عن بعد + تصميم الطرق ببرنامج Civil 3D.\n"
+            "🔹 **VIP 4 - باقة ركن الماجستير:** المراجع الأكاديمية والدعم البحثي وتحليل البيانات.\n"
+            "🔹 **VIP 5 - الباقة الشاملة (All-In-One):** الوصول الكامل لكل الأقسام البرمجية وأكواد الأتمتة."
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+
     elif call.data == "support":
-        bot.edit_message_text("💳 **الدعم الفني وفودافون كاش:**\n• رقم المحفظة: `01012345678`\nأرسل إيصال التحويل هنا لتفعيل حسابك.", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        text = (
+            "💳 **الدعم الفني وفودافون كاش:**\n\n"
+            "لإتمام الاشتراك في أي باقة VIP، يرجى التحويل على المحفظة الرسمية:\n"
+            "📲 **رقم المحفظة:** `01012345678`\n\n"
+            "ثم أرسل صورة إيصال التحويل هنا لتفعيل حسابك فوراً."
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
 @bot.message_handler(func=lambda message: True)
 def handle_text_chat(message):
     text = message.text
-    response_msg = f"🔍 أهلاً بك يا ديفيد! استفسارك حول ({text}) في مجال المساحة والجيوماتكس تم تسجيله، ويمكنك تصفح الأقسام عبر القائمة أو التواصل المباشر مع الدعم الفني."
-    bot.reply_to(message, response_msg)
+    response_msg = (
+        f"🤖 **رد مساعد الجيوماتكس:**\n\n"
+        f"لقد استلمت استفسارك حول: *({text})*.\n"
+        f"بصفتي مساعدك الهندسي، أنصحك بمراجعة **أقسام الأجهزة المساحية** أو **برامج الـ GIS** من القائمة الرئيسية، أو تصفح الأكواد المتاحة في أدوات المطورين للحصول على النتيجة الدقيقة!"
+    )
+    bot.reply_to(message, response_msg, parse_mode="Markdown")
 
 if __name__ == "__main__":
     print("Bot is running perfectly...")
