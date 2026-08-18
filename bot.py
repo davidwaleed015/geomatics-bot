@@ -2,9 +2,17 @@ import os
 import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+import google.generativeai as genai
 
+# توكن البوت وتوكن الـ Gemini API
 TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
+GEMINI_API_KEY = "حط_مفتاح_الـ_Gemini_API_هنا"  # سيتم ربطه ليعمل البوت بالذكاء الاصطناعي بالكامل
+
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+
+# إعداد الـ Gemini API
+genai.configure(api_key=GEMINI_API_KEY)
+gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
 def init_db():
     conn = sqlite3.connect("geomatics_bot.db")
@@ -58,9 +66,9 @@ def send_welcome(message):
     username = message.from_user.username or message.from_user.first_name
     trials, is_vip = get_or_create_user(user_id, username)
     welcome_text = (
-        f"🌐 **مرحباً بك يا {username} في المنصة الهندسية المتكاملة (Geomatics Copilot)**\n\n"
-        f"✨ لديك **({trials})** تجارب مجانية للاستعلام الهندسي.\n"
-        f"👇 **اختر القسم المطلوب من القائمة الشاملة أدناه:**"
+        f"🌐 **مرحباً بك يا {username} في المنصة الهندسية الذكية (Geomatics Copilot AI)**\n\n"
+        f"✨ لديك **({trials})** تجارب مجانية للاستعلام الهندسي الذكي.\n"
+        f"👇 **اختر القسم المطلوب من القائمة أدناه، أو اكتب سؤالك الهندسي مباشرة وسأقوم بالإجابة عليه فوراً:**"
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=main_menu_keyboard())
 
@@ -104,15 +112,15 @@ def callback_handler(call):
         text = (
             "🌍 **قسم نظم المعلومات الجغرافية (GIS) والاستشعار عن بعد (الشامل):**\n\n"
             "🔷 **أولاً: برامج نظم المعلومات الجغرافية (GIS):**\n"
-            "• **ArcGIS Desktop (ArcMap):** البرنامج الكلاسيكي لإدارة قواعد البيانات الجغرافية والتحليل المكاني (مدفوع).\n"
-            "• **ArcGIS Pro:** المنصة الحديثة المتكاملة للربط الثنائي والثلاثي الأبعاد والـ Web GIS (مدفوع).\n"
-            "• **QGIS:** أقوى البرامج المفتوحة ومجانية المصدر للخرائط والتحليل المكاني (مجاني).\n"
-            "• **Global Mapper:** معالجة البيانات المساحية الضخمة، تحويل الصيغ، وفتح الـ DEM (مدفوع).\n\n"
+            "• **ArcGIS Desktop (ArcMap):** البرنامج الكلاسيكي لإدارة قواعد البيانات الجغرافية والتحليل المكاني.\n"
+            "• **ArcGIS Pro:** المنصة الحديثة المتكاملة للربط الثنائي والثلاثي الأبعاد والـ Web GIS.\n"
+            "• **QGIS:** أقوى البرامج المفتوحة ومجانية المصدر للخرائط والتحليل المكاني.\n"
+            "• **Global Mapper:** معالجة البيانات المساحية الضخمة، تحويل الصيغ، وفتح الـ DEM.\n\n"
             "🛰️ **ثانياً: برامج الاستشعار عن بعد والمعالجة:**\n"
-            "• **ENVI:** المعالجة الطيفية المتقدمة للصور الفضائية وتحليل النطاقات (مدفوع).\n"
-            "• **ERDAS Imagine:** التصحيح الهندسي، التصنيف المراقب وغير المراقب للمرئيات (مدفوع).\n"
-            "• **PCI Geomatica (Catalyst):** معالجة صور الأقمار والصور الرادارية SAR (مدفوع).\n"
-            "• **SNAP:** برنامج وكالة الفضاء الأوروبية لمعالجة صور سنتينل (مجاني)."
+            "• **ENVI:** المعالجة الطيفية المتقدمة للصور الفضائية وتحليل النطاقات.\n"
+            "• **ERDAS Imagine:** التصحيح الهندسي، التصنيف المراقب وغير المراقب للمرئيات.\n"
+            "• **PCI Geomatica (Catalyst):** معالجة صور الأقمار والصور الرادارية SAR.\n"
+            "• **SNAP:** برنامج وكالة الفضاء الأوروبية لمعالجة صور سنتينل."
         )
         bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
@@ -174,15 +182,22 @@ def callback_handler(call):
         bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
 @bot.message_handler(func=lambda message: True)
-def handle_text_chat(message):
-    text = message.text
-    response_msg = (
-        f"🤖 **رد مساعد الجيوماتكس الشامل:**\n\n"
-        f"تم استلام استفسارك حول: *({text})*.\n"
-        f"اختر القسم المطلوب من القائمة الرئيسية التفاعلية لتجد كافة التفاصيل فوراً!"
-    )
-    bot.reply_to(message, response_msg, parse_mode="Markdown")
+def handle_ai_chat(message):
+    user_message = message.text
+    # إرسال رسالة "جاري التفكير..." للمستخدم
+    processing_msg = bot.reply_to(message, "🤖 **جاري تحليل سؤالك الهندسي وصياغة الإجابة...**", parse_mode="Markdown")
+    
+    try:
+        # توجيه السؤال لنموذج الذكاء الاصطناعي مع توجيه هندسي متخصص
+        prompt = f"أنت مساعد هندسي ذكي متخصص في الجيوماتكس، المساحة، نظم المعلومات الجغرافية GIS، وبرامج الهندسة المدنية. أجب باختصار واحترافية على السؤال التالي باللغة العربية: {user_message}"
+        response = gemini_model.generate_content(prompt)
+        ai_reply = response.text
+        
+        # تعديل رسالة الانتظار بالإجابة النهائية
+        bot.edit_message_text(ai_reply, chat_id=message.chat.id, message_id=processing_msg.message_id, parse_mode="Markdown")
+    except Exception as e:
+        bot.edit_message_text(f"عذراً، حدث خطأ أثناء الاتصال بمحرك الذكاء الاصطناعي. يجدر بك مراجعة الإعدادات.", chat_id=message.chat.id, message_id=processing_msg.message_id)
 
 if __name__ == "__main__":
-    print("Bot is running interactively...")
+    print("AI-Powered Bot is running smoothly...")
     bot.infinity_polling(skip_pending=True)
