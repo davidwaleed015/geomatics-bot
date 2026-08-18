@@ -5,7 +5,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import google.generativeai as genai
 
 # التوكنات مباشرة لتعمل المنصة فوراً دون أي أخطاء
-TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
+TELEGRAM_BOT_TOKEN = "8605350892:AAEQAroXq3LJHuQULCqeHhROQfj6DeutxkM"
 GEMINI_API_KEY = "AQ.Ab8RN6IfYfHL4I0FxGNrIH4tvdEXhRvE9oxmrP18HaaV-NBE7A"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
