@@ -4,20 +4,18 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import google.generativeai as genai
 
-# جلب المتغيرات البيئية
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
+# جلب المتغيرات البيئية بأمان
+TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-# إعداد ذكاء Gemini الاصطناعي
-if GEMINI_API_KEY and GEMINI_API_KEY != "YOUR_GEMINI_API_KEY":
+if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
     ai_model = genai.GenerativeModel("gemini-1.5-flash")
 else:
     ai_model = None
 
-# إعداد قاعدة البيانات
 def init_db():
     conn = sqlite3.connect("geomatics_bot.db")
     cursor = conn.cursor()
@@ -53,7 +51,6 @@ def update_trials(user_id):
     conn.commit()
     conn.close()
 
-# القائمة الرئيسية المحدثة بتصميم واسع ومريح للعين
 def main_menu_keyboard():
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(
@@ -88,7 +85,6 @@ def send_welcome(message):
     )
     bot.send_message(message.chat.id, welcome_text, parse_mode="Markdown", reply_markup=main_menu_keyboard())
 
-# التعامل مع الأزرار والـ Callbacks
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
     user_id = call.from_user.id
@@ -208,11 +204,10 @@ def callback_handler(call):
         )
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
-# معالجة الأسئلة النصية وإصلاح مشكلة عدم الرد عبر الذكاء الاصطناعي
 @bot.message_handler(func=lambda message: True)
 def handle_ai_chat(message):
     if not ai_model:
-        bot.reply_to(message, "مرحباً ديفيد! النظام يعمل ولكن مفتاح الذكاء الاصطناعي (Gemini API Key) بحاجة للتأكيد في إعدادات المنصة.")
+        bot.reply_to(message, "مرحباً ديفيد! النظام يعمل ولكن مفتاح الذكاء الاصطناعي بحاجة للتأكيد.")
         return
     
     try:
@@ -220,8 +215,9 @@ def handle_ai_chat(message):
         response = ai_model.generate_content(prompt)
         bot.reply_to(message, response.text)
     except Exception as e:
-        bot.reply_to(message, "عذراً، حدث خطأ مؤقت أثناء معالجة طلبك عبر الذكاء الاصطناعي. تأكد من إعداد المفتاح بشكل صحيح.")
+        bot.reply_to(message, "عذراً، حدث خطأ مؤقت أثناء معالجة طلبك عبر الذكاء الاصطناعي.")
 
 if __name__ == "__main__":
     print("Bot is running perfectly...")
     bot.infinity_polling()
+   
