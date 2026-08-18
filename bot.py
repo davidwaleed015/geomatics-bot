@@ -3,8 +3,8 @@ import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-# التوكن الأساسي للبوت
-TELEGRAM_BOT_TOKEN = "8605350892:AAEQAroXq3LJHuQULCqeHhROQfj6DeutxkM"
+# التوكن الصحيح المعمد لبوت Geomatics Helper Bot
+TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
