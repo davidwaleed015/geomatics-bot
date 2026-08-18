@@ -3,7 +3,7 @@ import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
+TELEGRAM_BOT_TOKEN = "8605350892:AAEQAroXq3LJHuQULCqeHhRQqFj6DeutxKM"
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
 def init_db():
