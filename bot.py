@@ -3,9 +3,7 @@ import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-# التوكن الصحيح المعمد لبوت Geomatics Helper Bot
 TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
-
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
 def init_db():
@@ -68,10 +66,16 @@ def send_welcome(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
-    bot.answer_callback_query(call.id)
+    try:
+        bot.answer_callback_query(call.id)
+    except Exception:
+        pass
+    
+    chat_id = call.message.chat.id
+    message_id = call.message.message_id
     
     if call.data == "main_menu":
-        bot.edit_message_text("🌐 **القائمة الرئيسية الشاملة:**\nاختر أحد الأقسام أدناه:", call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=main_menu_keyboard())
+        bot.edit_message_text("🌐 **القائمة الرئيسية الشاملة:**\nاختر أحد الأقسام أدناه:", chat_id, message_id, parse_mode="Markdown", reply_markup=main_menu_keyboard())
 
     elif call.data == "all_survey_devices":
         text = (
@@ -82,7 +86,7 @@ def callback_handler(call):
             "• **Drones (الدرونز / المسح الجوي):** تصوير الرفع المساحي بالدرون، إنتاج الخرائط الكنتورية والـ Orthomosaic.\n"
             "• **Digital & Auto Level (الموازنات):** الموازنات الدقيقة لحساب فروق المناسيب وشبكات الترتيب الهندسي."
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "all_survey_software":
         text = (
@@ -94,7 +98,7 @@ def callback_handler(call):
             "• **SketchUp:** النمذجة ثلاثية الأبعاد للمشاريع المعمارية والمساحية.\n"
             "• **Microsoft Excel (للمساحين):** جداول حساب الكميات، تحويل الإحداثيات، وتصميم جداول التوقيع."
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "gis_remote_pro":
         text = (
@@ -110,7 +114,7 @@ def callback_handler(call):
             "• **PCI Geomatica (Catalyst):** معالجة صور الأقمار والصور الرادارية SAR (مدفوع).\n"
             "• **SNAP:** برنامج وكالة الفضاء الأوروبية لمعالجة صور سنتينل (مجاني)."
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "civil_roads":
         text = (
@@ -119,7 +123,7 @@ def callback_handler(call):
             "• إعداد القطاعات الطولية (Profiles) والعرضية (Assemblies & Corridors).\n"
             "• استخراج جداول كميات الحفر والردم (Cut & Fill Earthwork Tables)."
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "software_hub":
         text = (
@@ -130,7 +134,7 @@ def callback_handler(call):
             "3. **Civil 3D & AutoCAD:** [روابط التنزيل والتفعيل](https://example.com/autocad)\n"
             "4. **Global Mapper, Surfer & QGIS:** [برامج التحليل](https://example.com/tools)"
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "master_corner":
         text = (
@@ -139,7 +143,7 @@ def callback_handler(call):
             "• مراجع مساحية وكتب علمية متخصصة في الجيوديسيا.\n"
             "• مصادر قواعد بيانات مكانية عالمية مجانية للباحثين."
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "dev_tools":
         text = (
@@ -147,7 +151,7 @@ def callback_handler(call):
             "إليك كود بايثون سريع لمعالجة ملفات الإحداثيات (CSV to Shapefile):\n"
             "```python\nimport arcpy\n# كود أتمتة لرفع الإحداثيات\nprint('GIS Automation Ready')\n```"
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "vip_plans":
         text = (
@@ -158,7 +162,7 @@ def callback_handler(call):
             "🔹 **VIP 4 (باقة الطرق والماجستير):** (Civil 3D والأبحاث الأكاديمية ورسائل الماجستير).\n"
             "🔹 **VIP 5 (الباقة الشاملة All-In-One):** الوصول الكامل لكل الأقسام، الدرونز، الليزر سكانر، وكامل السوفتوير والكراكات."
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
     elif call.data == "support":
         text = (
@@ -167,7 +171,7 @@ def callback_handler(call):
             "📲 **رقم المحفظة:** `01012345678`\n\n"
             "ثم أرسل صورة إيصال التحويل هنا لتفعيل حسابك وصلاحياتك فوراً."
         )
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
+        bot.edit_message_text(text, chat_id, message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
 @bot.message_handler(func=lambda message: True)
 def handle_text_chat(message):
@@ -175,10 +179,10 @@ def handle_text_chat(message):
     response_msg = (
         f"🤖 **رد مساعد الجيوماتكس الشامل:**\n\n"
         f"تم استلام استفسارك حول: *({text})*.\n"
-        f"اختر القسم المطلوب من القائمة الرئيسية (سواء الباقات، الـ GIS، أو الدعم الفني) لتجد كل التفاصيل الفنية فوراً!"
+        f"اختر القسم المطلوب من القائمة الرئيسية التفاعلية لتجد كافة التفاصيل فوراً!"
     )
     bot.reply_to(message, response_msg, parse_mode="Markdown")
 
 if __name__ == "__main__":
-    print("Bot is running perfectly...")
-    bot.infinity_polling()
+    print("Bot is running interactively...")
+    bot.infinity_polling(skip_pending=True)
