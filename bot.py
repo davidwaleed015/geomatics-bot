@@ -4,7 +4,7 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import google.generativeai as genai
 
-# جلب المتغيرات البيئية بأمان
+# توكن تيليجرام مباشر ليعمل فوراً
 TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
@@ -220,4 +220,3 @@ def handle_ai_chat(message):
 if __name__ == "__main__":
     print("Bot is running perfectly...")
     bot.infinity_polling()
-   
