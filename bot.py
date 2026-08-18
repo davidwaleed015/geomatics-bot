@@ -2,19 +2,21 @@ import os
 import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import google.generativeai as genai
+from google import genai
 
-# التوكنات مباشرة لتعمل المنصة فوراً دون أي أخطاء
-TELEGRAM_BOT_TOKEN = "8605350892:AAEQAroXq3LJHuQULCqeHhROQfj6DeutxkM"
+# التوكنات مباشرة
+TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
 GEMINI_API_KEY = "AQ.Ab8RN6IfYfHL4I0FxGNrIH4tvdEXhRvE9oxmrP18HaaV-NBE7A"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
+# تهيئة عميل جيمني بالطريقة الحديثة السليمة
+ai_client = None
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    ai_model = genai.GenerativeModel("gemini-1.5-flash")
-else:
-    ai_model = None
+    try:
+        ai_client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        print(f"GenAI Error: {e}")
 
 def init_db():
     conn = sqlite3.connect("geomatics_bot.db")
@@ -52,18 +54,16 @@ def update_trials(user_id):
     conn.close()
 
 def main_menu_keyboard():
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(
-        InlineKeyboardButton("📡  أقـسـام الأجهـزة المساحيـة والمعـايـرة  📡", callback_data="survey_devices"),
-        InlineKeyboardButton("🌍  قسـم الاستشـعار عـن بعـد (ENVI & ERDAS)  🌍", callback_data="remote_sensing"),
-        InlineKeyboardButton("💻  بـرامـج الـ GIS وتطبيـقات البايثـون  💻", callback_data="gis_software"),
-        InlineKeyboardButton("🛣️  تصميـم الطـرق بـرنامج AutoCAD Civil 3D  🛣️", callback_data="civil_roads"),
-        InlineKeyboardButton("📦  مـستـودع البـرامـج والتحميـلات (Software Hub)  📦", callback_data="software_hub"),
-        InlineKeyboardButton("🎓  ركـن الماجستـير والأبحـاث الأكاديميـة  🎓", callback_data="master_corner"),
-        InlineKeyboardButton("🛠️  أدوات المطورين وسكربتات الأتمتة  🛠️", callback_data="dev_tools"),
-        InlineKeyboardButton("💎  باقـات الاشتـراك الاحترافيـة (VIP 1 : VIP 5)  💎", callback_data="vip_plans"),
-        InlineKeyboardButton("💳  الدعـم الفنـي وفودافـون كـاش  💳", callback_data="support")
-    )
+    keyboard = InlineKeyboardMarkup()
+    keyboard.row(InlineKeyboardButton("📡 أقسام الأجهزة المساحية والمعايرة", callback_data="survey_devices"))
+    keyboard.row(InlineKeyboardButton("🌍 قسم الاستشعار عن بعد (ENVI & ERDAS)", callback_data="remote_sensing"))
+    keyboard.row(InlineKeyboardButton("💻 برامج الـ GIS وتطبيقات البايثون", callback_data="gis_software"))
+    keyboard.row(InlineKeyboardButton("🛣️ تصميم الطرق برنامج AutoCAD Civil 3D", callback_data="civil_roads"))
+    keyboard.row(InlineKeyboardButton("📦 مستودع البرامج والتحميلات (Software Hub)", callback_data="software_hub"))
+    keyboard.row(InlineKeyboardButton("🎓 ركن الماجستير والأبحاث الأكاديمية", callback_data="master_corner"))
+    keyboard.row(InlineKeyboardButton("🛠️ أدوات المطورين وسكربتات الأتمتة", callback_data="dev_tools"))
+    keyboard.row(InlineKeyboardButton("💎 باقات الاشتراك الاحترافية (VIP 1 : VIP 5)", callback_data="vip_plans"))
+    keyboard.row(InlineKeyboardButton("💳 الدعم الفني وفودافون كاش", callback_data="support"))
     return keyboard
 
 def back_to_main_keyboard():
@@ -177,20 +177,15 @@ def callback_handler(call):
         text = (
             "💎 **تفاصيل باقات الاشتراك الاحترافية (VIP 1 إلى VIP 5):**\n\n"
             "🔹 **VIP 1 - الباقة الأساسية:**\n"
-            "• تشمل: الوصول للأجهزة المساحية وأساسيات الـ GIS.\n"
-            "• (شهري: 300 EGP | ربع سنوي: 800 EGP | نصف سنوي: 1,500 EGP | سنوي: 2,800 EGP)\n\n"
+            "• تشمل: الوصول للأجهزة المساحية وأساسيات الـ GIS.\n\n"
             "🔹 **VIP 2 - الباقة المتقدمة:**\n"
-            "• تشمل: أساسيات الـ GIS + قسم الاستشعار عن بعد (ENVI & ERDAS).\n"
-            "• (شهري: 500 EGP | ربع سنوي: 1,350 EGP | نصف سنوي: 2,500 EGP | سنوي: 4,800 EGP)\n\n"
+            "• تشمل: أساسيات الـ GIS + قسم الاستشعار عن بعد (ENVI & ERDAS).\n\n"
             "🔹 **VIP 3 - الباقة الاحترافية:**\n"
-            "• تشمل: الاستشعار عن بعد + تصميم الطرق ببرنامج Civil 3D.\n"
-            "• (شهري: 800 EGP | ربع سنوي: 2,150 EGP | نصف سنوي: 4,000 EGP | سنوي: 7,500 EGP)\n\n"
+            "• تشمل: الاستشعار عن بعد + تصميم الطرق ببرنامج Civil 3D.\n\n"
             "🔹 **VIP 4 - باقة ركن الماجستير:**\n"
-            "• تشمل: المراجع الأكاديمية، الدعم البحثي، وتحليل البيانات المتقدم.\n"
-            "• (شهري: 1,500 EGP | ربع سنوي: 4,050 EGP | نصف سنوي: 7,600 EGP | سنوي: 14,000 EGP)\n\n"
+            "• تشمل: المراجع الأكاديمية، الدعم البحثي، وتحليل البيانات المتقدم.\n\n"
             "🔹 **VIP 5 - باقة أدوات المطورين الشاملة (All-In-One):**\n"
-            "• تشمل: الوصول الكامل لكل الأقسام، برامج المجال والكراكات، وأكواد أتمتة البايثون بلا حدود.\n"
-            "• (شهري: 2,700 EGP | ربع سنوي: 5,000 EGP | نصف سنوي: 9,500 EGP)\n"
+            "• تشمل: الوصول الكامل لكل الأقسام، برامج المجال، وأكواد أتمتة البايثون بلا حدود."
         )
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
@@ -200,21 +195,25 @@ def callback_handler(call):
             "💳 **الدعم الفني وفودافون كاش:**\n\n"
             "لإتمام الاشتراك في أي باقة، يرجى تحويل المبلغ المستحق على محفظة فودافون كاش الرسمية التالية:\n"
             "📲 **رقم المحفظة:** `01012345678`\n\n"
-            "ثم قم بإرسال **صورة إيصال التحويل** هنا في المحادثة وسيقوم النظام بتفعيل حسابك الفئة المطلوبة فوراً."
+            "ثم قم بإرسال صورة إيصال التحويل هنا في المحادثة وسيقوم النظام بتفعيل حسابك فورا."
         )
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
 @bot.message_handler(func=lambda message: True)
 def handle_ai_chat(message):
-    if not ai_model:
+    if not ai_client:
         bot.reply_to(message, "مرحباً ديفيد! النظام يعمل ولكن مفتاح الذكاء الاصطناعي بحاجة للتأكيد.")
         return
     
     try:
         prompt = f"أنت مساعد خبير ومحترف في الجيوماتكس، المساحة، نظم المعلومات الجغرافية GIS، ولغة بايثون للخرائط (ArcPy). أجب باحترافية على السؤال التالي باللغة العربية: {message.text}"
-        response = ai_model.generate_content(prompt)
+        response = ai_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
         bot.reply_to(message, response.text)
     except Exception as e:
+        print(f"AI Error: {e}")
         bot.reply_to(message, "عذراً، حدث خطأ مؤقت أثناء معالجة طلبك عبر الذكاء الاصطناعي.")
 
 if __name__ == "__main__":
