@@ -4,7 +4,7 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # التوكن الأساسي للبوت
-TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
+TELEGRAM_BOT_TOKEN = "8605350892:AAEQAroXq3LJHuQULCqeHhROQfj6DeutxkM"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
