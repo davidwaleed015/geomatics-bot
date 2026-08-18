@@ -2,7 +2,7 @@ import os
 import sqlite3
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from google import genai
+import google.generativeai as genai
 
 # التوكنات مباشرة
 TELEGRAM_BOT_TOKEN = "8605350892:AAEQARoXq3LJHuQULCqeHhRQqFj6DeutxKM"
@@ -10,13 +10,12 @@ GEMINI_API_KEY = "AQ.Ab8RN6IfYfHL4I0FxGNrIH4tvdEXhRvE9oxmrP18HaaV-NBE7A"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-# تهيئة عميل جيمني بالطريقة الحديثة السليمة
-ai_client = None
+# إعداد جيمني بالطريقة الكلاسيكية المستقرة
 if GEMINI_API_KEY:
-    try:
-        ai_client = genai.Client(api_key=GEMINI_API_KEY)
-    except Exception as e:
-        print(f"GenAI Error: {e}")
+    genai.configure(api_key=GEMINI_API_KEY)
+    ai_model = genai.GenerativeModel("gemini-1.5-flash")
+else:
+    ai_model = None
 
 def init_db():
     conn = sqlite3.connect("geomatics_bot.db")
@@ -176,16 +175,11 @@ def callback_handler(call):
         bot.answer_callback_query(call.id)
         text = (
             "💎 **تفاصيل باقات الاشتراك الاحترافية (VIP 1 إلى VIP 5):**\n\n"
-            "🔹 **VIP 1 - الباقة الأساسية:**\n"
-            "• تشمل: الوصول للأجهزة المساحية وأساسيات الـ GIS.\n\n"
-            "🔹 **VIP 2 - الباقة المتقدمة:**\n"
-            "• تشمل: أساسيات الـ GIS + قسم الاستشعار عن بعد (ENVI & ERDAS).\n\n"
-            "🔹 **VIP 3 - الباقة الاحترافية:**\n"
-            "• تشمل: الاستشعار عن بعد + تصميم الطرق ببرنامج Civil 3D.\n\n"
-            "🔹 **VIP 4 - باقة ركن الماجستير:**\n"
-            "• تشمل: المراجع الأكاديمية، الدعم البحثي، وتحليل البيانات المتقدم.\n\n"
-            "🔹 **VIP 5 - باقة أدوات المطورين الشاملة (All-In-One):**\n"
-            "• تشمل: الوصول الكامل لكل الأقسام، برامج المجال، وأكواد أتمتة البايثون بلا حدود."
+            "🔹 **VIP 1 - الباقة الأساسية:** تشمل الأجهزة المساحية وأساسيات الـ GIS.\n"
+            "🔹 **VIP 2 - الباقة المتقدمة:** أساسيات الـ GIS + الاستشعار عن بعد (ENVI & ERDAS).\n"
+            "🔹 **VIP 3 - الباقة الاحترافية:** الاستشعار عن بعد + تصميم الطرق ببرنامج Civil 3D.\n"
+            "🔹 **VIP 4 - باقة ركن الماجستير:** المراجع الأكاديمية والدعم البحثي وتحليل البيانات.\n"
+            "🔹 **VIP 5 - الباقة الشاملة (All-In-One):** الوصول الكامل لكل الأقسام وبرامج المجال وأكواد البايثون."
         )
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
@@ -193,24 +187,21 @@ def callback_handler(call):
         bot.answer_callback_query(call.id)
         text = (
             "💳 **الدعم الفني وفودافون كاش:**\n\n"
-            "لإتمام الاشتراك في أي باقة، يرجى تحويل المبلغ المستحق على محفظة فودافون كاش الرسمية التالية:\n"
+            "لإتمام الاشتراك، يرجى التحويل على محفظة فودافون كاش الرسمية التالية:\n"
             "📲 **رقم المحفظة:** `01012345678`\n\n"
-            "ثم قم بإرسال صورة إيصال التحويل هنا في المحادثة وسيقوم النظام بتفعيل حسابك فورا."
+            "ثم أرسل صورة إيصال التحويل هنا لتفعيل حسابك فوراً."
         )
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="Markdown", reply_markup=back_to_main_keyboard())
 
 @bot.message_handler(func=lambda message: True)
 def handle_ai_chat(message):
-    if not ai_client:
+    if not ai_model:
         bot.reply_to(message, "مرحباً ديفيد! النظام يعمل ولكن مفتاح الذكاء الاصطناعي بحاجة للتأكيد.")
         return
     
     try:
-        prompt = f"أنت مساعد خبير ومحترف في الجيوماتكس، المساحة، نظم المعلومات الجغرافية GIS، ولغة بايثون للخرائط (ArcPy). أجب باحترافية على السؤال التالي باللغة العربية: {message.text}"
-        response = ai_client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-        )
+        prompt = f"أنت مساعد خبير ومحترف في الجيوماتكس، المساحة، نظم المعلومات الجغرافية GIS، ولغة بايثون للخرائط (ArcPy). أجب باحترافية باللغة العربية على السؤال التالي: {message.text}"
+        response = ai_model.generate_content(prompt)
         bot.reply_to(message, response.text)
     except Exception as e:
         print(f"AI Error: {e}")
